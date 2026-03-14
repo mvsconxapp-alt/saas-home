@@ -1,0 +1,43 @@
+Entendido! Para que essa tela fique exatamente no endereço saasworksolutions.com (sem o .br ou qualquer outra extensão, caso esse seja o seu domínio principal), o processo é o mesmo, só precisamos garantir que os arquivos caiam na pasta raiz correta dentro da HostGator.
+
+Aqui está o ajuste final para o seu arquivo deploy.yml:
+
+O Código de Deploy (Copie este):
+YAML
+
+name: Deploy Portal Principal
+on:
+  push:
+    branches: [ main ]
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🚚 Checkout
+        uses: actions/checkout@v4
+
+      - name: ⚙️ Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: 🛠️ Build
+        run: |
+          npm install --legacy-peer-deps
+          npm run build
+
+      - name: 📂 Deploy FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          # Usamos ./ para que os arquivos fiquem na raiz (saasworksolutions.com)
+          server-dir: ./
+          local-dir: ./dist/
+          protocol: ftp
+          port: 21
+          # MUITO IMPORTANTE: mantém a pasta /ponto/ intacta
+          dangerous-clean-slate: false
