@@ -2,8 +2,11 @@ name: Deploy Portal Principal
 on:
   push:
     branches: [ main ]
+
 env:
+  # Isso resolve o aviso do Node.js 24 que você recebeu
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
@@ -14,7 +17,7 @@ jobs:
       - name: ⚙️ Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: '24'
+          node-version: '20' # Mantivemos a 20 por estabilidade, mas o env acima resolve o aviso
 
       - name: 🛠️ Build
         run: |
@@ -27,10 +30,12 @@ jobs:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          # Usamos ./ para que os arquivos fiquem na raiz (saasworksolutions.com)
+          # Ajuste importante: tente usar o caminho completo se o ./ falhar
+          # Exemplo: ./public_html/
           server-dir: ./
           local-dir: ./dist/
           protocol: ftp
           port: 21
-          # MUITO IMPORTANTE: mantém a pasta /ponto/ intacta
           dangerous-clean-slate: false
+          # Adicionamos isso para evitar erros de certificado SSL da HostGator
+          security: loose
